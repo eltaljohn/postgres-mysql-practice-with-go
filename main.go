@@ -8,7 +8,8 @@ import (
 )
 
 func main() {
-	driver := storage.MySQL
+
+	driver := storage.Postgres
 	storage.New(driver)
 
 	myStorage, err := storage.DAOProduct(driver)

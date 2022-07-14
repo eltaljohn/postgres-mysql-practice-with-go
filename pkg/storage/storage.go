@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/eltaljohn/go-db/pkg/product"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 	"log"
 	"sync"
@@ -27,24 +28,28 @@ const (
 
 // New creates the connection with DB
 func New(d Driver) {
+	envMap, err := godotenv.Read()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
 	switch d {
 	case MySQL:
-		newMySQLDB()
+		newMySQLDB(envMap)
 	case Postgres:
-		newPostgresDB()
+		newPostgresDB(envMap)
 	}
 }
 
-func newPostgresDB() {
+func newPostgresDB(env map[string]string) {
 	once.Do(func() {
 		var err error
 		dsn := fmt.Sprintf(
 			"postgres://%s:%s@%s:%s/%s?sslmode=disable",
-			"postgres",
-			"password",
-			"127.0.0.1",
-			"5432",
-			"postgres",
+			env["POSTGRES_USER_DB"],
+			env["POSTGRES_PASSWORD_DB"],
+			env["POSTGRES_DOMAIN_DB"],
+			env["POSTGRES_PORT_DB"],
+			env["POSTGRES_ENGINE_DB"],
 		)
 		db, err = sql.Open("postgres", dsn)
 		if err != nil {
@@ -59,16 +64,16 @@ func newPostgresDB() {
 	})
 }
 
-func newMySQLDB() {
+func newMySQLDB(env map[string]string) {
 	once.Do(func() {
 		var err error
 		dsn := fmt.Sprintf(
 			"%s:%s@tcp(%s:%s)/%s?tls=false&autocommit=true&allowNativePasswords=true&parseTime=true",
-			"root",
-			"password",
-			"127.0.0.1",
-			"3306",
-			"mysql",
+			env["MYSQL_USER_DB"],
+			env["MYSQL_PASSWORD_DB"],
+			env["MYSQL_DOMAIN_DB"],
+			env["MYSQL_PORT_DB"],
+			env["MYSQL_ENGINE_DB"],
 		)
 		db, err = sql.Open("mysql", dsn)
 		if err != nil {
